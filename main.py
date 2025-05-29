@@ -27,7 +27,7 @@ class SensorResponse(BaseModel):
     sensor: str
     datos: List[DatoSensor]
 
-@app.get("/lecturas")
+@app.get("/Lecturas")
 def get_lecturas():
     response = requests.get(CSV_URL)
     if response.status_code != 200:
@@ -37,18 +37,18 @@ def get_lecturas():
     data = [row for row in reader]
     return {"lecturas": data}
 
-@app.get("/sensor/{sensor_id}", response_model=SensorResponse)
-def get_sensor(sensor_id: str):
+@app.get("/sensor/{Sensor1}", response_model=SensorResponse)
+def get_sensor(Sensor1: str):
     response = requests.get(CSV_URL)
     if response.status_code != 200:
-        return {"sensor": sensor_id, "datos": []}
+        return {"sensor": Sensor1, "datos": []}
     decoded = response.content.decode("utf-8")
     reader = csv.DictReader(StringIO(decoded))
     datos = []
     for row in reader:
-        if sensor_id in row:
+        if Sensor1 in row:
             datos.append({
                 "timestamp": row["Timestamp"],
-                "valor": row[sensor_id]
+                "valor": row[Sensor1]
             })
-    return {"sensor": sensor_id, "datos": datos}
+    return {"sensor": Sensor1, "datos": datos}
