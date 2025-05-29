@@ -1,53 +1,51 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import csv
-import requests
-from io import StringIO
-from typing import List
 from pydantic import BaseModel
-import os
+import requests
+import csv
+from io import StringIO
 
 app = FastAPI()
 
+# Habilitar CORS para GitHub Pages
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://hugonogueron2607.github.io"],
+    allow_origins=["*"],  # en producción se recomienda especificar dominios
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-CSV_URL = os.environ.get("https://docs.google.com/spreadsheets/d/1cotJ7Goay6NluG2SfVCxx-rlfnDPdZB0_wO5ExIoG4s/gviz/tq?tqx=out:csv&sheet=Lecturas")
-class DatoSensor(BaseModel):
+# URL pública del CSV
+CSV_URL = "https://docs.google.com/spreadsheets/d/1cotJ7Goay6NluG2SfVCxx-rlfnDPdZB0_wO5ExIoG4s/gviz/tq?tqx=out:csv&sheet=Lecturas"
+
+# Modelos de respuesta
+class Lectura(BaseModel):
     timestamp: str
     valor: str
 
 class SensorResponse(BaseModel):
     sensor: str
-    datos: List[DatoSensor]
+    datos: list[Lectura]
 
-@app.get("/Lecturas")
-def get_lecturas():
-    response = requests.get(CSV_URL)
-    if response.status_code != 200:
-        return {"error": "No se pudo obtener el archivo CSV"}
-    decoded = response.content.decode("utf-8")
-    reader = csv.DictReader(StringIO(decoded))
-    data = [row for row in reader]
-    return {"lecturas": data}
+@app.get("/sensor/{sensor_id}", response_model=SensorResponse)
+def get_sensor(sensor_id: str):
+    try:
+        response = requests.get(CSV_URL)
+        response.raise_for_status()
+        csv_data = response.text
+        reader = csv.DictReader(StringIO(csv_data))
 
-@app.get("/sensor/{Sensor1}", response_model=SensorResponse)
-def get_sensor(Sensor1: str):
-    response = requests.get(CSV_URL)
-    if response.status_code != 200:
-        return {"sensor": Sensor1, "datos": []}
-    decoded = response.content.decode("utf-8")
-    reader = csv.DictReader(StringIO(decoded))
-    datos = []
-    for row in reader:
-        if Sensor1 in row:
-            datos.append({
-                "timestamp": row["Timestamp"],
-                "valor": row[Sensor1]
-            })
-    return {"sensor": Sensor1, "datos": datos}
+        datos = []
+        for row in reader:
+            if sensor_id in row:
+                datos.append({
+                    "timestamp": row["Timestamp"],
+                    "valor": row[sensor_id]
+                })
+
+        return {"sensor": sensor_id, "datos": datos}
+
+    except Exception as e:
+        print("❌ Error:", str(e))
+        return {"sensor": sensor_id, "datos": []}
