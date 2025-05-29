@@ -17,8 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-CSV_URL = os.environ.get("CSV_URL")
-
+CSV_URL = os.environ.get("https://docs.google.com/spreadsheets/d/1cotJ7Goay6NluG2SfVCxx-rlfnDPdZB0_wO5ExIoG4s/gviz/tq?tqx=out:csv&sheet=Lecturas")
 class DatoSensor(BaseModel):
     timestamp: str
     valor: str
