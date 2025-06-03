@@ -75,3 +75,22 @@ def get_all_sensors():
     except Exception as e:
         print("❌ Error:", str(e))
         return []
+    
+@app.get("/extras")
+def get_extras():
+    campos = ["voltajePanel", "voltajeBateria", "porcentajeBateria", "porcentajePanel"]
+    try:
+        response = requests.get(CSV_URL)
+        response.raise_for_status()
+        csv_data = response.text
+        reader = csv.DictReader(StringIO(csv_data))
+        rows = list(reader)
+
+        # Tomamos la fila más reciente con todos los valores no vacíos
+        for row in reversed(rows):
+            if all(row.get(campo, "").strip() != "" for campo in campos):
+                return {campo: row[campo] for campo in campos}
+        return {campo: None for campo in campos}
+    except Exception as e:
+        print("❌ Error en /extras:", str(e))
+        return {campo: None for campo in campos}
