@@ -94,3 +94,50 @@ def get_extras():
     except Exception as e:
         print("❌ Error en /extras:", str(e))
         return {campo: None for campo in campos}
+    
+    @app.get("/resumen")
+def get_resumen():
+    sensores = [f"Sensor{i}" for i in range(1, 9)]
+    campos_extras = ["voltajePanel", "voltajeBateria", "porcentajeBateria", "porcentajePanel"]
+
+    try:
+        response = requests.get(CSV_URL)
+        response.raise_for_status()
+        csv_data = response.text
+        reader = csv.DictReader(StringIO(csv_data))
+        rows = list(reader)
+
+        # Últimos datos por sensor
+        resumen_sensores = {}
+        for sensor_id in sensores:
+            for row in reversed(rows):
+                if sensor_id in row and row[sensor_id].strip():
+                    resumen_sensores[sensor_id] = {
+                        "timestamp": row["Timestamp"],
+                        "valor": row[sensor_id]
+                    }
+                    break
+            else:
+                resumen_sensores[sensor_id] = {"timestamp": None, "valor": None}
+
+        # Últimos valores de extras
+        resumen_extras = {}
+        for row in reversed(rows):
+            if all(row.get(campo, "").strip() != "" for campo in campos_extras):
+                resumen_extras = {campo: row[campo] for campo in campos_extras}
+                break
+        else:
+            resumen_extras = {campo: None for campo in campos_extras}
+
+        return {
+            "sensores": resumen_sensores,
+            "extras": resumen_extras
+        }
+
+    except Exception as e:
+        print("❌ Error en /resumen:", str(e))
+        return {
+            "sensores": {f"Sensor{i}": {"timestamp": None, "valor": None} for i in range(1, 9)},
+            "extras": {campo: None for campo in campos_extras}
+        }
+
