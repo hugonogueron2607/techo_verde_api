@@ -95,7 +95,7 @@ def get_extras():
         print("❌ Error en /extras:", str(e))
         return {campo: None for campo in campos}
     
-    @app.get("/resumen")
+@app.get("/resumen")
 def get_resumen():
     sensores = [f"Sensor{i}" for i in range(1, 9)]
     campos_extras = ["voltajePanel", "voltajeBateria", "porcentajeBateria", "porcentajePanel"]
