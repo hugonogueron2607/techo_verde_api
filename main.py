@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 # URL del archivo CSV público de Google Sheets
-CSV_URL = "https://docs.google.com/spreadsheets/d/1cotJ7Goay6NluG2SfVCxx-rlfnDPdZB0_wO5ExIoG4s/gviz/tq?tqx=out:csv&sheet=Lecturas"
+CSV_URL = "https://docs.google.com/spreadsheets/d/1Mu0mfmwoWRI_kJ8EweGpJT1g608t6EQixtfevX0z0ac/gviz/tq?tqx=out:csv&sheet=Lecturas"
 
 # Modelo de datos
 class Lectura(BaseModel):
